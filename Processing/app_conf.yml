@@ -1,0 +1,10 @@
+version: 1
+datastore:
+  filename: stats.sqlite
+scheduler:
+  period_sec: 5
+temperature:
+  url: http://localhost:8090/readings/temperature?start_timestamp=
+co2:
+  url: http://localhost:8090/readings/co2readings?start_timestamp=
+  
