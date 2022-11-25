@@ -149,6 +149,10 @@ def populate_stats():
     logger.info('process completed')
     return list
 
+
+def health():
+   return { "message": "Running"}, 200
+
 def init_scheduler():
     sched = BackgroundScheduler(daemon=True)
     sched.add_job(populate_stats,
