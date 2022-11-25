@@ -104,6 +104,8 @@ def report_co2_reading(body):
     return NoContent, 201
 
 
+def health():
+   return { "message": "Running"}, 200
 
     
 app = connexion.FlaskApp(__name__, specification_dir='')

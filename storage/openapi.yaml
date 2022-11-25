@@ -7,6 +7,31 @@ info:
 servers:
 - url: /
 paths:
+  /health:
+    get:
+      summary: gets the event stats
+      operationId: app.health
+      description: checks if the service is running
+      responses:
+        '200':
+          description: The serivce is up and running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
   /readings/temperature:
     get:
       tags:

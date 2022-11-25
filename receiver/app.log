@@ -2819,3 +2819,6 @@
 2022-11-16 00:09:40,639 - basicLogger - INFO - Returned event temperature response (Id: 5fc137c7-f9e9-4c2d-b324-9bfad8839ef0) with status code 201
 2022-11-16 00:09:40,647 - basicLogger - INFO - Requested event co2 with a unique id of 6224ce01-7a0c-4aaa-b213-8894bf2e2c22
 2022-11-16 00:09:40,721 - basicLogger - INFO - Returned event co2 reading response (Id: 6224ce01-7a0c-4aaa-b213-8894bf2e2c22) with status code 201
+2022-11-25 08:26:42,124 - basicLogger - INFO - App Conf File: app_conf.yaml
+2022-11-25 08:26:42,125 - basicLogger - INFO - Log Conf File: log_conf.yaml
+2022-11-25 08:27:25,555 - basicLogger - DEBUG - connection refused

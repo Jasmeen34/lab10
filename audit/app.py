@@ -100,6 +100,10 @@ def get_co2_reading(index):
         logger.error("Could not find co2 at index %d" % index)
         return { "message": "Not Found"}, 404
 
+def health():
+   return { "message": "Running"}, 200
+
+
 app = connexion.FlaskApp(__name__, specification_dir='')
 app.add_api("openapi.yaml")
 CORS(app.app)
