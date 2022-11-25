@@ -1,0 +1,65 @@
+---
+openapi: 3.0.0
+info:
+  title: greenshouse minitoring system
+  description: API for the greenhouse monitoring system
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  
+  /check_health:
+    get:
+      summary: gets the status of serivices
+      operationId: app.check_health
+      description: gets the status of serivices
+      responses:
+        '200':
+          description: Successfully returned a list of staatus of services
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/health'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    health:
+      required:
+      - receiver
+      - storage
+      - processing
+      - audit
+      - last_updated
+      
+      type: object
+      properties:
+        receiver:
+          type: string
+          format: uuid
+        storage:
+          type: string
+          format: uuid
+        processing:
+          type: string
+          format: uuid
+        audit:
+          type: string
+          format: uuid
+        last_updated:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+        
+    
+  
