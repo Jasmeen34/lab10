@@ -87,6 +87,17 @@ services:
       depends_on:
         - "processing"
         - "audit"
+  health:
+      image: health
+      port:
+        - "8120:8120"
+      environment:
+        - TARGET_ENV=test
+      depends_on:
+        - "storage"
+        - "prcessing"
+        - "receiver"
+        - "audit"
   db:
     image: mysql:5.7
     restart: always
