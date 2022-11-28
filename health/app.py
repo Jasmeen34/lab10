@@ -80,7 +80,7 @@ def populate_stats():
             receiver_message = 'Running'
         else:
             receiver_message = 'Service down'
-    except ConnectionError:
+    except:
         receiver_message = 'Service down'
     
     try:
@@ -89,7 +89,7 @@ def populate_stats():
             storage_message = 'Running'
         else:
             storage_message = 'Service down'
-    except ConnectionError:
+    except:
         storage_message = 'Service down'
     try:
         processing_status =  requests.get(processing_url, headers = headers)
@@ -98,7 +98,7 @@ def populate_stats():
             processing_message = 'Running'
         else:
             processing_message = 'Service down'
-    except ConnectionError:
+    except:
         processing_message = 'Service down'
     
     try:
@@ -107,7 +107,7 @@ def populate_stats():
             audit_message = 'Running'
         else:
             audit_message = 'Service down'
-    except ConnectionError:
+    except :
         audit_message = 'Service down'
     current_timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     logger.info(processing_message)
