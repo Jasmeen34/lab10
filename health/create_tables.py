@@ -10,7 +10,7 @@ c.execute('''
     receiver STRING(50) NOT NULL,
     storage  STRING(50) NOT NULL,
     processing STRING(100) NOT NULL,
-    aduit STRING(100) NOT NULL,
+    audit STRING(100) NOT NULL,
     last_updated STRING(100) NOT NULL)
 ''')
 conn.commit()
