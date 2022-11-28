@@ -23,7 +23,7 @@ def create_database(path):
     conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute('''
-        CREATE TABLE health
+        CREATE TABLE health_status
         (id INTEGER PRIMARY KEY ASC,
         receiver VARCHAR NOT NULL,
         storage VARCHAR NOT NULL,
@@ -34,11 +34,9 @@ def create_database(path):
     conn.commit()
     conn.close()
 
-path = 'health.sqlite'
+path = 'health_status.sqlite'
 isExist = os.path.exists(path)
-if isExist == True:
-    print("Exists")
-else:
+if isExist != True:
     create_database(path)
 
 with open("app_conf.yml", 'r') as f:
@@ -50,23 +48,76 @@ with open("log_conf.yml", 'r') as f:
 
 logger = logging.getLogger('basicLogger')
 
+DB_ENGINE = create_engine(f"sqlite:///{path}")
+Base.metadata.bind = DB_ENGINE
+DB_SESSION = sessionmaker(bind=DB_ENGINE)
 def check_health():
-    pass
+    logger.info('Request has been started')
+    session = DB_SESSION()
+    results = session.query(Health).order_by(Health.last_updated.desc())
+    if not results:
+        logger.error("Statistics does not exist")
+        return 404
+
+    logger.info("The request has been completed")
+    session.close()
+    return results[0].to_dict(), 200
 
 def populate_stats():
+    logger.info('Period processing has been started')
+    session = DB_SESSION()
     headers = {"content-type": "application/json"}
-    receiver = app_config["receiver"]['url']
-    storage = app_config["storage"]['url']
-    processing = app_config["processing"]['url']
-    audit = app_config["audit"]['url']
+    receiver_url = app_config["receiver"]['url']
+    storage_url = app_config["storage"]['url']
+    processing_url = app_config["processing"]['url']
+    audit_url = app_config["audit"]['url']
     
-    receiver_status  = requests.get(receiver, headers = headers)
-    storage_status =  requests.get(storage, headers = headers)
-    processing_status = requests.get(processing, headers = headers)
-    audit_status = requests.get(audit, headers = headers)
+    try:
+        receiver_status  = requests.get(receiver_url, headers = headers)
+        if receiver_status.status_code == 200:
+            receiver_message = 'Running'
+        else:
+            receiver_message = 'Service down'
+    except ConnectionError:
+        receiver_message = 'Service down'
+    
+    try:
+        storage_status =  requests.get(storage_url, headers = headers)
+        if storage_status.status_code == 200:
+            storage_message = 'Running'
+        else:
+            storage_message = 'Service down'
+    except ConnectionError:
+        storage_message = 'Service down'
+    try:
+        processing_status =  requests.get(processing_url, headers = headers)
+        if processing_status.status_code == 200:
+            processing_message = 'Running'
+        else:
+            processing_message = 'Service down'
+    except ConnectionError:
+        processing_message = 'Service down'
+    
+    try:
+        audit_status =  requests.get(audit_url, headers = headers)
+        if audit_status.status_code == 200:
+            audit_message = 'Running'
+        else:
+            audit_message = 'Service down'
+    except ConnectionError:
+        audit_message = 'Service down'
+    current_timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    health = Health(receiver_message,
+        storage_message,
+        processing_message,
+        audit_message,
+        datetime.datetime.strptime(current_timestamp,
+        "%Y-%m-%dT%H:%M:%S.%f"))
+    session.add(health)
 
-    logger.info(receiver_status.status_code)
-
+    session.commit()
+    session.close()
+  
 def init_scheduler():
     sched = BackgroundScheduler(daemon=True)
     sched.add_job(populate_stats,
@@ -81,7 +132,7 @@ CORS(app.app)
 app.app.config['CORS_HEADERS'] = 'Content-Type'
 
 if __name__ == "__main__":
-    populate_stats()
+    init_scheduler()
     app.run(port=8120)
     
     
