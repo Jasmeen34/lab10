@@ -91,15 +91,15 @@ def populate_stats():
             storage_message = 'Service down'
     except ConnectionError:
         storage_message = 'Service down'
-    try:
-        processing_status =  requests.get(processing_url, headers = headers)
-        logger.info(processing_url, processing_status)
-        if processing_status.status_code == 200:
-            processing_message = 'Running'
-        else:
-            processing_message = 'Service down'
-    except ConnectionError:
-        processing_message = 'Service down'
+    # try:
+    #     processing_status =  requests.get(processing_url, headers = headers)
+    #     logger.info(processing_url, processing_status)
+    #     if processing_status.status_code == 200:
+    #         processing_message = 'Running'
+    #     else:
+    #         processing_message = 'Service down'
+    # except ConnectionError:
+    #     processing_message = 'Service down'
     
     try:
         audit_status =  requests.get(audit_url, headers = headers)
