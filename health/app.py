@@ -23,7 +23,7 @@ def create_database(path):
     conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute('''
-        CREATE TABLE health_status
+        CREATE TABLE health
         (id INTEGER PRIMARY KEY ASC,
         receiver VARCHAR NOT NULL,
         storage VARCHAR NOT NULL,
@@ -34,7 +34,7 @@ def create_database(path):
     conn.commit()
     conn.close()
 
-path = 'health_status.sqlite'
+path = 'health.sqlite'
 isExist = os.path.exists(path)
 if isExist == True:
     print("Exists")
@@ -56,7 +56,7 @@ DB_SESSION = sessionmaker(bind=DB_ENGINE)
 def check_health():
     logger.info('Request has been started')
     session = DB_SESSION()
-    results = session.query(health_status).order_by(health_status.last_updated.desc())
+    results = session.query(health).order_by(health.last_updated.desc())
     if not results:
         logger.error("Statistics does not exist")
         return 404

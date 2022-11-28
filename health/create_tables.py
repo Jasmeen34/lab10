@@ -1,10 +1,10 @@
 import sqlite3
 import datetime
 
-conn = sqlite3.connect('health_status.sqlite')
+conn = sqlite3.connect('health.sqlite')
 c = conn.cursor()
 c.execute('''
-        CREATE TABLE health_status
+        CREATE TABLE health
         (id INTEGER PRIMARY KEY ASC,
         receiver VARCHAR NOT NULL,
         storage VARCHAR NOT NULL,
