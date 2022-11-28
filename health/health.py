@@ -2,12 +2,12 @@ from sqlalchemy import Column, Integer, String, DateTime
 from base import Base
 class Health(Base):
  
-    __tablename__ = "health_status.py"
+    __tablename__ = "health_status"
     id = Column(Integer, primary_key=True)
-    receiver = Column(Integer, nullable=False)
-    storage = Column(Integer, nullable=False)
-    processing = Column(Integer, nullable=True)
-    audit = Column(Integer, nullable=True)
+    receiver = Column(String, nullable=False)
+    storage = Column(String, nullable=False)
+    processing = Column(String, nullable=True)
+    audit = Column(String, nullable=True)
     last_updated = Column(DateTime, nullable=False)
 
     def __init__(self, receiver, storage, processing, audit ,last_updated):
