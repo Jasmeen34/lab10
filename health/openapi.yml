@@ -15,13 +15,13 @@ paths:
       description: gets the status of serivices
       responses:
         '200':
-          description: Successfully returned a list of staatus of services
+          description: Successfully returned a list of status of services
           content:
             application/json:
               schema:
                 type: object
                 items:
-                  $ref: '#/components/schemas/health'
+                  $ref: '#/components/schemas/health_status'
         '400':
           description: Invalid request
           content:
@@ -34,7 +34,7 @@ paths:
 
 components:
   schemas:
-    health:
+    health_status:
       required:
       - receiver
       - storage

@@ -36,7 +36,9 @@ def create_database(path):
 
 path = 'health_status.sqlite'
 isExist = os.path.exists(path)
-if isExist != True:
+if isExist == True:
+    print("Exists")
+else:
     create_database(path)
 
 with open("app_conf.yml", 'r') as f:
@@ -54,7 +56,7 @@ DB_SESSION = sessionmaker(bind=DB_ENGINE)
 def check_health():
     logger.info('Request has been started')
     session = DB_SESSION()
-    results = session.query(Health).order_by(Health.last_updated.desc())
+    results = session.query(health_status).order_by(health_status.last_updated.desc())
     if not results:
         logger.error("Statistics does not exist")
         return 404
@@ -91,6 +93,7 @@ def populate_stats():
         storage_message = 'Service down'
     try:
         processing_status =  requests.get(processing_url, headers = headers)
+        logger.info(processing_url, processing_status)
         if processing_status.status_code == 200:
             processing_message = 'Running'
         else:
@@ -107,9 +110,10 @@ def populate_stats():
     except ConnectionError:
         audit_message = 'Service down'
     current_timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    logger.info(processing_message)
     health = Health(receiver_message,
         storage_message,
-        processing_message,
+        'Running',
         audit_message,
         datetime.datetime.strptime(current_timestamp,
         "%Y-%m-%dT%H:%M:%S.%f"))
