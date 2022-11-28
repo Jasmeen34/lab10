@@ -21,7 +21,7 @@ paths:
               schema:
                 type: object
                 items:
-                  $ref: '#/components/schemas/health_status'
+                  $ref: '#/components/schemas/health'
         '400':
           description: Invalid request
           content:
@@ -34,7 +34,7 @@ paths:
 
 components:
   schemas:
-    health_status:
+    health:
       required:
       - receiver
       - storage

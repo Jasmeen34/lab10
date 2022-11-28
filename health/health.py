@@ -1,20 +1,20 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from base import Base
 class Health(Base):
- 
-    __tablename__ = "health_status"
+    """ health Statistics """
+    __tablename__ = "health"
     id = Column(Integer, primary_key=True)
     receiver = Column(String, nullable=False)
-    storage = Column(String, nullable=False)
+    storage = Column(String, nullable=True)
     processing = Column(String, nullable=True)
     audit = Column(String, nullable=True)
     last_updated = Column(DateTime, nullable=False)
 
-    def __init__(self, receiver, storage, processing, audit ,last_updated):
-       
+    def __init__(self, receiver, storage, processing, audit,last_updated):
+        """ Initializes a processing statistics objet """
         self.receiver = receiver
-        self.storage= storage
-        self.procesing = processing
+        self.storage = storage
+        self.processing = processing
         self.audit = audit
         self.last_updated = last_updated
         
@@ -29,4 +29,3 @@ class Health(Base):
         dict['last_updated'] = self.last_updated.strftime("%Y-%m-%dT%H:%M:%S.%f") 
         
         return dict
-    
