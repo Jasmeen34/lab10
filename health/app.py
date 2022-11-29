@@ -2,22 +2,18 @@ import connexion
 from connexion import NoContent
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from flask_cors import CORS, cross_origin
 import datetime
 from base import Base
 import requests
 from health import Health
 import yaml
+import json
+import os
+import sqlite3
 import logging
 import logging.config
-import json
 from apscheduler.schedulers.background import BackgroundScheduler
-import sqlalchemy as db
-from flask_cors import CORS, cross_origin
-from swagger_ui_bundle import swagger_ui_path
-import os
-from os.path import exists
-import sqlite3
-import time
 
 def create_database(path):
     conn = sqlite3.connect(path)
@@ -53,10 +49,11 @@ logger = logging.getLogger('basicLogger')
 DB_ENGINE = create_engine(f"sqlite:///{path}")
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
-def check_health():
+
+def get_stats():
     logger.info('Request has been started')
     session = DB_SESSION()
-    results = session.query(health).order_by(health.last_updated.desc())
+    results = session.query(Health).order_by(Health.last_updated.desc())
     if not results:
         logger.error("Statistics does not exist")
         return 404
@@ -65,79 +62,84 @@ def check_health():
     session.close()
     return results[0].to_dict(), 200
 
-def populate_stats():
+def populate_health():
+    """ Periodically update health stats """
     logger.info('Period processing has been started')
     session = DB_SESSION()
+    
+    url_receiver = app_config['receiver']['url']
+    url_storage = app_config['storage']['url']
+    url_processing = app_config['processing']['url']
+    url_audit = app_config['audit']['url']
+
     headers = {"content-type": "application/json"}
-    receiver_url = app_config["receiver"]['url']
-    storage_url = app_config["storage"]['url']
-    processing_url = app_config["processing"]['url']
-    audit_url = app_config["audit"]['url']
     
     try:
-        receiver_status  = requests.get(receiver_url, headers = headers)
-        if receiver_status.status_code == 200:
-            receiver_message = 'Running'
+        response_receiver = requests.get(url_receiver, headers=headers)
+        if response_receiver.status_code == 200:
+            receiver = "Service is running" 
+            logger.info(f"Status code received {response_receiver.status_code} for receiver")
         else:
-            receiver_message = 'Service down'
+            receiver = "Service is Down"
     except:
-        receiver_message = 'Service down'
+        receiver = "Service is Down"
+
+    try:
+        response_storage = requests.get(url_storage, headers=headers)
+        if response_storage.status_code == 200:
+            storage = "Service is running" 
+            logger.info(f"Status code received {response_storage.status_code} for storage")
+        else:
+            storage = "Service is Down"
+    except:
+        storage = "Service is Down"
     
     try:
-        storage_status =  requests.get(storage_url, headers = headers)
-        if storage_status.status_code == 200:
-            storage_message = 'Running'
+        response_processing = requests.get(url_processing, headers=headers)
+        if response_processing.status_code == 200:
+            processing = "Service is running" 
+            logger.info(f"Status code received {response_processing.status_code} for processing")
         else:
-            storage_message = 'Service down'
+            processing = "Service is Down"
     except:
-        storage_message = 'Service down'
-    try:
-        processing_status =  requests.get(processing_url, headers = headers)
-        logger.info(processing_url, processing_status)
-        if processing_status.status_code == 200:
-            processing_message = 'Running'
-        else:
-            processing_message = 'Service down'
-    except:
-        processing_message = 'Service down'
+        processing = "Service is Down"
     
     try:
-        audit_status =  requests.get(audit_url, headers = headers)
-        if audit_status.status_code == 200:
-            audit_message = 'Running'
+        response_audit = requests.get(url_audit, headers=headers)
+        if response_audit.status_code == 200:
+            audit = "Service is running" 
+            logger.info(f"Status code received {response_audit.status_code} for audit")
         else:
-            audit_message = 'Service down'
-    except :
-        audit_message = 'Service down'
-    current_timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    logger.info(processing_message)
-    health = Health(receiver_message,
-        storage_message,
-        'Running',
-        audit_message,
-        datetime.datetime.strptime(current_timestamp,
-        "%Y-%m-%dT%H:%M:%S.%f"))
-    session.add(health)
+            audit = "Service is Down"
+    except:
+        audit = "Service is Down"
+        logger.info(f"Status code received {response_audit.status_code} for audit")
+    
+    last_updated = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    session = DB_SESSION()
+    stats = Health(receiver,
+        storage,
+        processing,
+        audit,
+        datetime.datetime.strptime(last_updated, "%Y-%m-%dT%H:%M:%S.%f"))
+
+    session.add(stats)
 
     session.commit()
     session.close()
-  
+
 def init_scheduler():
     sched = BackgroundScheduler(daemon=True)
-    sched.add_job(populate_stats,
-    'interval',
-    seconds=app_config['scheduler']['period_sec'])
+    sched.add_job(populate_health, 'interval', seconds=app_config['scheduler']['period_sec'])
     sched.start()
-    
 
 app = connexion.FlaskApp(__name__, specification_dir='')
-app.add_api("openapi.yml")
+app.add_api("openapi.yaml", base_path="/health", strict_validation=True, validate_responses=True)
 CORS(app.app)
 app.app.config['CORS_HEADERS'] = 'Content-Type'
-
 if __name__ == "__main__":
     init_scheduler()
-    app.run(port=8120)
+    app.run(port=8120, use_reloader=False)
     
     
     
