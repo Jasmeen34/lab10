@@ -50,7 +50,7 @@ DB_ENGINE = create_engine(f"sqlite:///{path}")
 Base.metadata.bind = DB_ENGINE
 DB_SESSION = sessionmaker(bind=DB_ENGINE)
 
-def get_stats():
+def check_health():
     logger.info('Request has been started')
     session = DB_SESSION()
     results = session.query(Health).order_by(Health.last_updated.desc())
@@ -75,7 +75,7 @@ def populate_health():
     headers = {"content-type": "application/json"}
     
     try:
-        response_receiver = requests.get(url_receiver, headers=headers)
+        response_receiver = requests.get(url_receiver, headers=headers, timeout=5)
         if response_receiver.status_code == 200:
             receiver = "Service is running" 
             logger.info(f"Status code received {response_receiver.status_code} for receiver")
@@ -85,7 +85,7 @@ def populate_health():
         receiver = "Service is Down"
 
     try:
-        response_storage = requests.get(url_storage, headers=headers)
+        response_storage = requests.get(url_storage, headers=headers, timeout=5)
         if response_storage.status_code == 200:
             storage = "Service is running" 
             logger.info(f"Status code received {response_storage.status_code} for storage")
@@ -93,9 +93,18 @@ def populate_health():
             storage = "Service is Down"
     except:
         storage = "Service is Down"
-    
     try:
-        response_processing = requests.get(url_processing, headers=headers)
+        response_audit = requests.get(url_audit, headers=headers,timeout=3)
+        if response_audit.status_code == 200:
+            audit = "Service is running"
+            logger.info(f"Status code received {response_audit.status_code} for audit")
+        else:
+            audit = "Service is Down"
+    except:
+        audit = "Service is Down"
+        logger.info(f"Status code received {response_audit.status_code} for audit")
+    try:
+        response_processing = requests.get(url_processing, headers=headers,timeout=5)
         if response_processing.status_code == 200:
             processing = "Service is running" 
             logger.info(f"Status code received {response_processing.status_code} for processing")
@@ -104,16 +113,6 @@ def populate_health():
     except:
         processing = "Service is Down"
     
-    try:
-        response_audit = requests.get(url_audit, headers=headers)
-        if response_audit.status_code == 200:
-            audit = "Service is running" 
-            logger.info(f"Status code received {response_audit.status_code} for audit")
-        else:
-            audit = "Service is Down"
-    except:
-        audit = "Service is Down"
-        logger.info(f"Status code received {response_audit.status_code} for audit")
     
     last_updated = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     session = DB_SESSION()
@@ -134,15 +133,9 @@ def init_scheduler():
     sched.start()
 
 app = connexion.FlaskApp(__name__, specification_dir='')
-app.add_api("openapi.yaml", base_path="/health", strict_validation=True, validate_responses=True)
+app.add_api("openapi.yml", strict_validation=True, validate_responses=True)
 CORS(app.app)
 app.app.config['CORS_HEADERS'] = 'Content-Type'
 if __name__ == "__main__":
     init_scheduler()
     app.run(port=8120, use_reloader=False)
-    
-    
-    
-    
-
-

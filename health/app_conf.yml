@@ -1,6 +1,6 @@
 version: 1
 scheduler:
-  period_sec: 20
+  period_sec: 5
 receiver:
   url: http://acit3855-kafka-lab6.eastus.cloudapp.azure.com:8080/health
 storage:
