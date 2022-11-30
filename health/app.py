@@ -93,16 +93,17 @@ def populate_health():
             storage = "Service is Down"
     except:
         storage = "Service is Down"
+
     try:
-        response_audit = requests.get(url_audit, headers=headers,timeout=3)
+        response_audit = requests.get(url_audit, headers=headers,timeout=5)
         if response_audit.status_code == 200:
-            audit = "Service is running"
-            logger.info(f"Status code received {response_audit.status_code} for audit")
+            processing = "Service is running" 
+            logger.info(f"Status code received {response_audit.status_code} for processing")
         else:
             audit = "Service is Down"
     except:
         audit = "Service is Down"
-        logger.info(f"Status code received {response_audit.status_code} for audit")
+
     try:
         response_processing = requests.get(url_processing, headers=headers,timeout=5)
         if response_processing.status_code == 200:
