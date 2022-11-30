@@ -97,7 +97,7 @@ def populate_health():
     try:
         response_audit = requests.get(url_audit, headers=headers,timeout=5)
         if response_audit.status_code == 200:
-            processing = "Service is running" 
+            audit= "Service is running" 
             logger.info(f"Status code received {response_audit.status_code} for processing")
         else:
             audit = "Service is Down"
